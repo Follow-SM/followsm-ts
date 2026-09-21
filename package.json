@@ -1,6 +1,6 @@
 {
   "name": "@followsm/sdk",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Official TypeScript/JavaScript SDK for the FollowSM smart-money & orderbook toxicity API",
   "license": "MIT",
   "main": "dist/index.js",
