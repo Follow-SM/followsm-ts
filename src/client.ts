@@ -4,7 +4,6 @@ import type { ToxicitySnapshot } from "./types";
 
 const DEFAULT_BASE_URL = "https://follow-sm.com/api/v1";
 const DEFAULT_WS_URL = "wss://follow-sm.com/api/v1/developer/toxicity/stream";
-export const FREE_COMMUNITY_KEY = "FREE_COMMUNITY_KEY";
 
 export interface FollowSMClientOptions {
   apiKey?: string;
@@ -19,12 +18,12 @@ interface StreamEvents extends Record<string, unknown> {
 }
 
 export class FollowSMClient {
-  private readonly apiKey: string;
+  private readonly apiKey?: string;
   private readonly baseUrl: string;
   private readonly wsUrl: string;
 
   constructor(options: FollowSMClientOptions = {}) {
-    this.apiKey = options.apiKey ?? FREE_COMMUNITY_KEY;
+    this.apiKey = options.apiKey;
     this.baseUrl = (options.baseUrl ?? DEFAULT_BASE_URL).replace(/\/$/, "");
     this.wsUrl = options.wsUrl ?? DEFAULT_WS_URL;
   }
@@ -34,7 +33,7 @@ export class FollowSMClient {
     for (const [key, value] of Object.entries(params ?? {})) url.searchParams.set(key, value);
 
     const response = await fetch(url, {
-      headers: { "X-FollowSM-Key": this.apiKey },
+      headers: this.apiKey ? { "X-FollowSM-Key": this.apiKey } : {},
     });
 
     if (response.status === 429) {
@@ -65,7 +64,10 @@ export class FollowSMClient {
   /** Streams live toxicity snapshots over the WebSocket feed. Emits 'snapshot' | 'error' | 'close'. */
   streamToxicity(): SimpleEmitter<StreamEvents> {
     const emitter = new SimpleEmitter<StreamEvents>();
-    const ws = new WebSocket(`${this.wsUrl}?api_key=${encodeURIComponent(this.apiKey)}`);
+    const uri = this.apiKey
+      ? `${this.wsUrl}?api_key=${encodeURIComponent(this.apiKey)}`
+      : this.wsUrl;
+    const ws = new WebSocket(uri);
 
     ws.addEventListener("message", (event) => {
       emitter.emit("snapshot", JSON.parse(event.data as string) as ToxicitySnapshot);

@@ -13,9 +13,11 @@ npm i @followsm/sdk
 ```ts
 import { FollowSMClient } from "@followsm/sdk";
 
-const client = new FollowSMClient({ apiKey: "fsm_live_..." }); // omit to use the free tier
+const client = new FollowSMClient({ apiKey: "fsm_live_..." }); // omit for the free, IP-rate-limited tier
 const snapshot = await client.getToxicitySnapshot("BTCUSDT");
 console.log(snapshot.vpin, snapshot.is_toxic_alert);
+
+const toxicPairs = await client.getToxicPairs(); // also works without an apiKey
 ```
 
 ## `ToxicitySnapshot` response

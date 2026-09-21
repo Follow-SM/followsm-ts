@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { FollowSMClient, FollowSMRateLimitError, FREE_COMMUNITY_KEY } from "../src";
+import { FollowSMClient, FollowSMRateLimitError } from "../src";
 
 const SNAPSHOT_JSON = {
   symbol: "BTCUSDT",
@@ -54,8 +54,8 @@ describe("FollowSMClient", () => {
     );
   });
 
-  it("defaults to the free community key", () => {
+  it("defaults to an unauthenticated client", () => {
     const client = new FollowSMClient();
-    expect((client as unknown as { apiKey: string }).apiKey).toBe(FREE_COMMUNITY_KEY);
+    expect((client as unknown as { apiKey?: string }).apiKey).toBeUndefined();
   });
 });
