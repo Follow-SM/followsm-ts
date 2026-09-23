@@ -46,7 +46,7 @@ export interface BinanceMicrostructureMetrics {
   price_delta_15m_pct: number;
 }
 
-export type EventDirection = "bullish_if_yes" | "bearish_if_yes";
+export type EventDirection = "bullish_if_yes" | "bearish_if_yes" | "neutral";
 
 export interface PolymarketEventMetrics {
   market_slug: string;
@@ -54,6 +54,7 @@ export interface PolymarketEventMetrics {
   condition_id: string;
   yes_token_id: string;
   direction: EventDirection;
+  direction_confidence: number;
   implied_probability: number;
   prob_delta_15m: number;
   clob_order_flow_imbalance: number;
@@ -75,6 +76,7 @@ export interface CompositeSignals {
   is_toxic_alert: boolean;
   cross_market_divergence_flag: boolean;
   recommended_action: RecommendedAction;
+  direction_ambiguous: boolean;
 }
 
 /** Top-level composite payload from /developer/confluence/* and /ws/v1/confluence. */

@@ -1,6 +1,7 @@
 import { FollowSMAuthenticationError, FollowSMRateLimitError } from "./errors";
 import { SimpleEmitter } from "./emitter";
-import type { ConfluenceSnapshot, ToxicitySnapshot } from "./types";
+import { evaluateRiskAction, type RiskConfig } from "./risk";
+import type { ConfluenceSnapshot, RecommendedAction, ToxicitySnapshot } from "./types";
 
 const DEFAULT_BASE_URL = "https://follow-sm.com/api/v1";
 const DEFAULT_WS_URL = "wss://follow-sm.com/api/v1/developer/toxicity/stream";
@@ -11,6 +12,7 @@ export interface FollowSMClientOptions {
   baseUrl?: string;
   wsUrl?: string;
   confluenceWsUrl?: string;
+  riskConfig?: RiskConfig;
 }
 
 interface StreamEvents extends Record<string, unknown> {
@@ -30,12 +32,14 @@ export class FollowSMClient {
   private readonly baseUrl: string;
   private readonly wsUrl: string;
   private readonly confluenceWsUrl: string;
+  private readonly riskConfig: RiskConfig;
 
   constructor(options: FollowSMClientOptions = {}) {
     this.apiKey = options.apiKey;
     this.baseUrl = (options.baseUrl ?? DEFAULT_BASE_URL).replace(/\/$/, "");
     this.wsUrl = options.wsUrl ?? DEFAULT_WS_URL;
     this.confluenceWsUrl = options.confluenceWsUrl ?? DEFAULT_CONFLUENCE_WS_URL;
+    this.riskConfig = options.riskConfig ?? {};
   }
 
   private async request<T>(path: string, params?: Record<string, string>): Promise<T> {
@@ -94,6 +98,11 @@ export class FollowSMClient {
 
   getConfluenceSnapshot(symbol: string): Promise<ConfluenceSnapshot> {
     return this.request<ConfluenceSnapshot>("/developer/confluence/snapshot", { symbol });
+  }
+
+  /** Re-derives a recommended action from `snapshot` using this client's `riskConfig`. */
+  evaluateRisk(snapshot: ConfluenceSnapshot): RecommendedAction {
+    return evaluateRiskAction(snapshot, this.riskConfig);
   }
 
   getConfluenceSnapshots(toxicOnly = false): Promise<ConfluenceSnapshot[]> {
