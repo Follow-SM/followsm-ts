@@ -15,6 +15,8 @@ export interface ToxicitySnapshot {
   timestamp: number;
   price: number;
   vpin: number;
+  /** Rank of `vpin` within this symbol's trailing 24h, [0, 1]; null while warming up. */
+  vpin_percentile?: number | null;
   ob_toxicity_1pct: number;
   ob_imbalance_l1: number;
   depth_bands: DepthBands;
@@ -37,6 +39,7 @@ export interface SignalGateDecision {
 export interface BinanceMicrostructureMetrics {
   price: number;
   vpin: number;
+  vpin_percentile?: number | null;
   ob_toxicity_1pct: number;
   ob_imbalance_l1: number;
   depth_bands: DepthBands;
