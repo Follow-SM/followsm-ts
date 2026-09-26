@@ -1,6 +1,10 @@
 {
   "name": "@followsm/sdk",
-  "version": "1.5.3",
+  "version": "1.5.4",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Follow-SM/followsm-ts.git"
+  },
   "description": "Official TypeScript/JavaScript SDK for the FollowSM smart-money & orderbook toxicity API",
   "license": "MIT",
   "main": "dist/index.js",
