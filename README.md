@@ -54,8 +54,8 @@ const toxicPairs = await client.getToxicPairs(); // also works without an apiKey
 | `symbol` | `string` | Trading pair, e.g. `"BTCUSDT"` |
 | `timestamp` | `number` | Unix epoch seconds when the snapshot was computed |
 | `price` | `number` | Last traded price |
-| `vpin` | `number` | Volume-Synchronized Probability of Informed Trading, `[0.0, 1.0]` (per-symbol bucket = 24h volume / 1200) |
-| `vpin_percentile` | `number \| null` | Rank of `vpin` within this symbol's own trailing 24h, `[0.0, 1.0]`; `null` for ~1h after the feed starts |
+| `vpin` | `number` | Volume-Synchronized Probability of Informed Trading, `[0.0, 1.0]`; `0.0` while the symbol is warming up |
+| `vpin_percentile` | `number \| null` | Rank of `vpin` within this symbol's own recent history, `[0.0, 1.0]`; `null` while warming up |
 | `ob_toxicity_1pct` | `number` | Ask/bid notional ratio within ±1% of mid price |
 | `ob_imbalance_l1` | `number` | Best bid/ask (L1) imbalance |
 | `depth_bands` | `DepthBands` | Keyed by band width (`"0.5%"`, `"1.0%"`, `"2.0%"`), each with `bid_notional`, `ask_notional`, `imbalance_ratio` |

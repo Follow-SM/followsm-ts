@@ -17,8 +17,8 @@ export interface RiskConfig {
 const DEFAULT_RISK_CONFIG: Required<RiskConfig> = {
   vpinPercentileWidenThreshold: 0.9,
   vpinPercentileHaltThreshold: 0.95,
-  vpinWidenThreshold: 0.6,
-  vpinHaltThreshold: 0.8,
+  vpinWidenThreshold: 0.8,
+  vpinHaltThreshold: 0.9,
   obToxicityThreshold: 2.0,
   minSemanticConfidence: 0.65,
 };

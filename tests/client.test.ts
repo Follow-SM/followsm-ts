@@ -148,11 +148,11 @@ function makeSnapshot(vpin: number, divergence: boolean, confidence = 1.0): Conf
 
 describe("evaluateRiskAction", () => {
   it("halts on high vpin and divergence by default", () => {
-    expect(evaluateRiskAction(makeSnapshot(0.85, true))).toBe("HALT_MAKER_QUOTES");
+    expect(evaluateRiskAction(makeSnapshot(0.92, true))).toBe("HALT_MAKER_QUOTES");
   });
 
   it("downgrades halt when direction confidence is low", () => {
-    expect(evaluateRiskAction(makeSnapshot(0.85, true, 0.4))).toBe("WIDEN_SPREAD_1_5X");
+    expect(evaluateRiskAction(makeSnapshot(0.92, true, 0.4))).toBe("WIDEN_SPREAD_1_5X");
   });
 
   it("respects custom thresholds", () => {
@@ -165,7 +165,12 @@ describe("evaluateRiskAction", () => {
 
   it("client.evaluateRisk uses its configured riskConfig", () => {
     const client = new FollowSMClient({ riskConfig: { minSemanticConfidence: 0.9 } });
-    expect(client.evaluateRisk(makeSnapshot(0.85, true, 0.8))).toBe("WIDEN_SPREAD_1_5X");
+    expect(client.evaluateRisk(makeSnapshot(0.92, true, 0.8))).toBe("WIDEN_SPREAD_1_5X");
+  });
+
+  it("raw fallback ignores a normal thin-pair VPIN", () => {
+    expect(evaluateRiskAction(makeSnapshot(0.65, false))).toBe("NONE");
+    expect(evaluateRiskAction(makeSnapshot(0.82, false))).toBe("WIDEN_SPREAD_2X");
   });
 
   it("prefers vpin_percentile over raw vpin when present", () => {

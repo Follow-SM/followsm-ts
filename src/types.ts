@@ -15,7 +15,7 @@ export interface ToxicitySnapshot {
   timestamp: number;
   price: number;
   vpin: number;
-  /** Rank of `vpin` within this symbol's trailing 24h, [0, 1]; null while warming up. */
+  /** Rank of `vpin` within this symbol's own recent history, [0, 1]; null while warming up. */
   vpin_percentile?: number | null;
   ob_toxicity_1pct: number;
   ob_imbalance_l1: number;
