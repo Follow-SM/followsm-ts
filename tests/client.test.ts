@@ -167,4 +167,25 @@ describe("evaluateRiskAction", () => {
     const client = new FollowSMClient({ riskConfig: { minSemanticConfidence: 0.9 } });
     expect(client.evaluateRisk(makeSnapshot(0.85, true, 0.8))).toBe("WIDEN_SPREAD_1_5X");
   });
+
+  it("prefers vpin_percentile over raw vpin when present", () => {
+    const withPct = (vpin: number, divergence: boolean, pct: number) => {
+      const s = makeSnapshot(vpin, divergence);
+      s.binance_microstructure.vpin_percentile = pct;
+      return s;
+    };
+    expect(evaluateRiskAction(withPct(0.95, false, 0.4))).toBe("NONE");
+    expect(evaluateRiskAction(withPct(0.2, false, 0.92))).toBe("WIDEN_SPREAD_2X");
+    expect(evaluateRiskAction(withPct(0.2, true, 0.97))).toBe("HALT_MAKER_QUOTES");
+    expect(evaluateRiskAction(withPct(0.2, false, 0.92), { vpinPercentileWidenThreshold: 0.95 })).toBe("NONE");
+  });
+
+  it("treats a toxic 1% book like the backend does", () => {
+    const s = makeSnapshot(0.2, false);
+    s.binance_microstructure.ob_toxicity_1pct = 3;
+    expect(evaluateRiskAction(s)).toBe("WIDEN_SPREAD_2X");
+    expect(evaluateRiskAction(s, { obToxicityThreshold: 5 })).toBe("NONE");
+    s.composite_signals.cross_market_divergence_flag = true;
+    expect(evaluateRiskAction(s)).toBe("HALT_MAKER_QUOTES");
+  });
 });
