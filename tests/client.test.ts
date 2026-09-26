@@ -60,6 +60,49 @@ describe("FollowSMClient", () => {
     const client = new FollowSMClient();
     expect((client as unknown as { apiKey?: string }).apiKey).toBeUndefined();
   });
+
+  it("throws FollowSMRateLimitError with the plain-text body on a global-limiter 429", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        status: 429,
+        ok: false,
+        text: async () => "Global rate limit exceeded",
+        headers: new Headers(),
+      } as Response),
+    );
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(new FollowSMClient().getToxicitySnapshot("BTCUSDT")).rejects.toThrow(
+      "Global rate limit exceeded",
+    );
+  });
+
+  it("streamToxicity emits one snapshot per list item and skips pings", () => {
+    const sockets: FakeWebSocket[] = [];
+    class FakeWebSocket {
+      listeners: Record<string, (event: { data?: string }) => void> = {};
+      constructor(public url: string) {
+        sockets.push(this);
+      }
+      addEventListener(type: string, listener: (event: { data?: string }) => void) {
+        this.listeners[type] = listener;
+      }
+    }
+    vi.stubGlobal("WebSocket", FakeWebSocket);
+
+    const symbols: string[] = [];
+    new FollowSMClient({ apiKey: "k" })
+      .streamToxicity()
+      .on("snapshot", (snapshot) => symbols.push(snapshot.symbol));
+
+    const [ws] = sockets;
+    ws.listeners.message({ data: JSON.stringify([SNAPSHOT_JSON, { ...SNAPSHOT_JSON, symbol: "ETHUSDT" }]) });
+    ws.listeners.message({ data: JSON.stringify({ type: "ping" }) });
+
+    expect(ws.url).toBe("wss://follow-sm.com/ws/v1/toxicity?api_key=k");
+    expect(symbols).toEqual(["BTCUSDT", "ETHUSDT"]);
+  });
 });
 
 function makeSnapshot(vpin: number, divergence: boolean, confidence = 1.0): ConfluenceSnapshot {
